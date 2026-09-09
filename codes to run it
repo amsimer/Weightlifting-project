@@ -1,0 +1,4 @@
+Calibration command: odrv0.axis1.requested_state = AXIS_STATE_FULL_CALIBRATION_SEQUENCE
+Current limit command: odrv0.axis1.motor.config.current_lim = 2
+odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+  
