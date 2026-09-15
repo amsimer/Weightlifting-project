@@ -1,4 +1,4 @@
- Weightlifting Project
+# Weightlifting Project
 
 Technology and Health Project Course
 
