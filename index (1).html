@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ODrive Load Console</title>
+<style>
+  :root{
+    --bg: #14171a;
+    --panel: #1c2024;
+    --line: #2c3136;
+    --amber: #ff8a3d;
+    --amber-dim: #7a4a26;
+    --green: #6fcf97;
+    --red: #e5636e;
+    --text: #e7e5e0;
+    --text-dim: #8a9099;
+    --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+    --sans: 'Inter', -apple-system, Segoe UI, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 20% -10%, #1e232a 0%, var(--bg) 55%);
+    color:var(--text);
+    font-family:var(--sans);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .console{
+    width:100%;
+    max-width:640px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    overflow:hidden;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,.6);
+  }
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 20px;
+    border-bottom:1px solid var(--line);
+  }
+  .topbar h1{
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:.02em;
+    margin:0;
+    color:var(--text);
+  }
+  .topbar .sub{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--text-dim);
+    margin-top:2px;
+  }
+  .status{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--mono);
+    font-size:12px;
+  }
+  .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--text-dim);
+    box-shadow:0 0 0 0 transparent;
+  }
+  .dot.live{
+    background:var(--green);
+    box-shadow:0 0 10px 1px rgba(111,207,151,.6);
+  }
+  .dot.fault{
+    background:var(--red);
+    box-shadow:0 0 10px 1px rgba(229,99,110,.6);
+  }
+  button.connect{
+    font-family:var(--mono);
+    font-size:12px;
+    background:transparent;
+    color:var(--text);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:7px 12px;
+    cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  button.connect:hover{border-color:var(--amber); color:var(--amber);}
+  button.connect.on{color:var(--green); border-color:var(--green);}
+
+  .readout{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    border-bottom:1px solid var(--line);
+  }
+  .readout .cell{
+    padding:22px 20px 18px;
+  }
+  .readout .cell + .cell{ border-left:1px solid var(--line); }
+  .readout label{
+    display:block;
+    font-size:11px;
+    color:var(--text-dim);
+    letter-spacing:.02em;
+    margin-bottom:10px;
+  }
+  .readout .value{
+    font-family:var(--mono);
+    font-variant-numeric:tabular-nums;
+    font-size:52px;
+    line-height:1;
+    color:var(--text);
+  }
+  .readout .value.target{ color:var(--amber); }
+  .readout .unit{
+    font-size:16px;
+    color:var(--text-dim);
+    margin-left:6px;
+  }
+
+  .adjust{
+    padding:18px 20px;
+    border-bottom:1px solid var(--line);
+  }
+  .adjust label{
+    display:block;
+    font-size:11px;
+    color:var(--text-dim);
+    margin-bottom:10px;
+  }
+  .grid-btn{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:6px;
+  }
+  .grid-btn button{
+    font-family:var(--mono);
+    font-size:13px;
+    padding:11px 0;
+    background:#22262b;
+    color:var(--text);
+    border:1px solid var(--line);
+    border-radius:3px;
+    cursor:pointer;
+    transition:background .12s ease, border-color .12s ease;
+  }
+  .grid-btn button:hover{ border-color:var(--amber); }
+  .grid-btn button:active{ background:var(--amber-dim); }
+  .grid-btn button.neg{ color:#e0a98a; }
+
+  .controls{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:1px;
+    background:var(--line);
+  }
+  .controls button{
+    font-family:var(--sans);
+    font-size:13px;
+    font-weight:600;
+    padding:16px 0;
+    background:var(--panel);
+    color:var(--text);
+    border:none;
+    cursor:pointer;
+    transition:background .12s ease;
+  }
+  .controls button:hover{ background:#242830; }
+  .controls button#armBtn.armed{ color:var(--green); }
+  .controls button#clearBtn{ color:var(--red); }
+
+  .log{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--text-dim);
+    padding:10px 20px;
+    border-top:1px solid var(--line);
+    white-space:pre-wrap;
+    min-height:16px;
+  }
+
+  .setup{
+    max-width:640px;
+    width:100%;
+    margin-top:14px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--text-dim);
+    line-height:1.6;
+  }
+  .setup a{ color:var(--amber); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="console">
+    <div class="topbar">
+      <div>
+        <h1>ODrive Load Console</h1>
+        <div class="sub">axis1 · ascii protocol</div>
+      </div>
+      <div class="status">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">disconnected</span>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="cell">
+        <label>set weight</label>
+        <span class="value target" id="setWeight">--<span class="unit">kg</span></span>
+      </div>
+      <div class="cell">
+        <label>current weight</label>
+        <span class="value" id="currentWeight">--<span class="unit">kg</span></span>
+      </div>
+    </div>
+
+    <div class="adjust">
+      <label>adjust set weight (kg)</label>
+      <div class="grid-btn">
+        <button class="neg" data-kg="-10">-10</button>
+        <button class="neg" data-kg="-5">-5</button>
+        <button class="neg" data-kg="-2.5">-2.5</button>
+        <button class="neg" data-kg="-1">-1</button>
+        <button class="neg" data-kg="-0.5">-0.5</button>
+        <button data-kg="0.5">+0.5</button>
+        <button data-kg="1">+1</button>
+        <button data-kg="2.5">+2.5</button>
+        <button data-kg="5">+5</button>
+        <button data-kg="10">+10</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="calBtn">Calibrate</button>
+      <button id="armBtn">On / Off</button>
+      <button id="clearBtn">Clear errors</button>
+    </div>
+
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="setup">
+    connect button opens chrome's serial picker · requires ODrive UART (GPIO1/GPIO2) wired to a USB-serial
+    adapter, 115200 baud · web serial is chrome/edge only, not safari/firefox
+  </div>
+</div>
+
+<script>
+const kgToCurrent = 1.0 / 1.8;
+const AXIS_STATE_IDLE = 1;
+const AXIS_STATE_FULL_CALIBRATION_SEQUENCE = 3;
+const AXIS_STATE_CLOSED_LOOP_CONTROL = 8;
+
+let port, reader, writer, keepReading = false;
+let lineBuffer = "";
+let armed = false;
+let setKg = 0;
+
+const $ = (id) => document.getElementById(id);
+const statusDot = $('statusDot'), statusText = $('statusText');
+const setWeightEl = $('setWeight'), currentWeightEl = $('currentWeight');
+const logEl = $('log');
+
+function log(msg){
+  logEl.textContent = msg;
+}
+
+function setStatus(state){
+  statusDot.className = 'dot' + (state === 'live' ? ' live' : state === 'fault' ? ' fault' : '');
+  statusText.textContent = state === 'live' ? 'connected' : state === 'fault' ? 'error' : 'disconnected';
+}
+
+async function connect(){
+  if(!('serial' in navigator)){
+    log('Web Serial not supported — use Chrome or Edge.');
+    return;
+  }
+  try{
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 115200 });
+    writer = port.writable.getWriter();
+    keepReading = true;
+    setStatus('live');
+    log('connected');
+    readLoop();
+    pollLoop();
+    // read the current configured current_lim so setKg starts accurate
+    sendCmd('r axis1.motor.config.current_lim');
+  }catch(err){
+    setStatus('fault');
+    log('connect failed: ' + err.message);
+  }
+}
+
+async function readLoop(){
+  const decoder = new TextDecoderStream();
+  const readableClosed = port.readable.pipeTo(decoder.writable);
+  reader = decoder.readable.getReader();
+  try{
+    while(keepReading){
+      const { value, done } = await reader.read();
+      if(done) break;
+      lineBuffer += value;
+      let idx;
+      while((idx = lineBuffer.indexOf('\n')) >= 0){
+        const line = lineBuffer.slice(0, idx).replace('\r','').trim();
+        lineBuffer = lineBuffer.slice(idx + 1);
+        if(line) handleLine(line);
+      }
+    }
+  }catch(err){
+    setStatus('fault');
+    log('read error: ' + err.message);
+  }
+}
+
+function handleLine(line){
+  const num = parseFloat(line);
+  if(!isNaN(num)){
+    // heuristic: values are routed by which poll fired last, tracked via pendingField
+    if(pendingField === 'current'){
+      currentWeightEl.innerHTML = (num / kgToCurrent).toFixed(2) + '<span class="unit">kg</span>';
+    }else if(pendingField === 'setlim'){
+      setKg = num / kgToCurrent;
+      setWeightEl.innerHTML = setKg.toFixed(2) + '<span class="unit">kg</span>';
+    }
+  }
+}
+
+let pendingField = null;
+
+async function sendCmd(cmd){
+  if(!writer) return;
+  await writer.write(new TextEncoder().encode(cmd + '\n'));
+}
+
+async function pollLoop(){
+  while(keepReading){
+    pendingField = 'current';
+    await sendCmd('r axis1.motor.current_control.Iq_measured');
+    await new Promise(r => setTimeout(r, 150));
+    pendingField = 'setlim';
+    await sendCmd('r axis1.motor.config.current_lim');
+    await new Promise(r => setTimeout(r, 150));
+  }
+}
+
+function setForceKg(kg){
+  setKg = Math.max(0, kg);
+  const current = (setKg * kgToCurrent).toFixed(4);
+  sendCmd(`w axis1.motor.config.current_lim ${current}`);
+  setWeightEl.innerHTML = setKg.toFixed(2) + '<span class="unit">kg</span>';
+}
+
+document.querySelectorAll('.grid-btn button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const delta = parseFloat(btn.dataset.kg);
+    setForceKg(setKg + delta);
+  });
+});
+
+$('calBtn').addEventListener('click', () => {
+  sendCmd(`w axis1.requested_state ${AXIS_STATE_FULL_CALIBRATION_SEQUENCE}`);
+  log('calibration sequence requested');
+});
+
+$('armBtn').addEventListener('click', () => {
+  armed = !armed;
+  const state = armed ? AXIS_STATE_CLOSED_LOOP_CONTROL : AXIS_STATE_IDLE;
+  sendCmd(`w axis1.requested_state ${state}`);
+  $('armBtn').classList.toggle('armed', armed);
+  log(armed ? 'closed loop control requested' : 'idle requested');
+});
+
+$('clearBtn').addEventListener('click', () => {
+  sendCmd('sc');
+  log('clear errors sent');
+});
+
+document.querySelector('.topbar').insertAdjacentHTML('beforeend', '');
+const connectBtn = document.createElement('button');
+connectBtn.className = 'connect';
+connectBtn.textContent = 'Connect';
+connectBtn.addEventListener('click', () => {
+  if(!port) connect();
+});
+document.querySelector('.status').before(connectBtn);
+</script>
+
+</body>
+</html>
