@@ -33,7 +33,12 @@
   button.connect:hover{border-color:var(--amber); color:var(--amber);}
   .readout{display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--line);}
   .readout .cell{padding:22px 20px 18px;}
-  .readout .cell + .cell{border-left:1px solid var(--line);}
+  .readout .cell:nth-child(even){border-left:1px solid var(--line);}
+  .readout .cell.row2{border-top:1px solid var(--line);}
+  .readout .cell.row2 .value{font-size:40px;}
+  .readout .cell.peak{cursor:pointer;}
+  .readout .cell.peak .value{color:var(--green);}
+  .readout .hint{font-size:10px; color:var(--text-dim); margin-left:8px;}
   .readout label{display:block; font-size:11px; color:var(--text-dim); letter-spacing:.02em; margin-bottom:10px;}
   .readout .value{font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:52px; line-height:1;}
   .readout .value.target{color:var(--amber);}
@@ -53,6 +58,14 @@
   .controls button#clearBtn{color:var(--red);}
   .log{font-family:var(--mono); font-size:11px; color:var(--text-dim); padding:10px 20px; border-top:1px solid var(--line); white-space:pre-wrap; min-height:36px;}
   .setup{margin-top:14px; font-family:var(--mono); font-size:11px; color:var(--text-dim); line-height:1.6;}
+  [hidden]{display:none !important;}
+  .modebar{padding:12px 20px; border-bottom:1px solid var(--line);}
+  #adaptPanel{padding:14px 20px 16px; border-bottom:1px solid var(--line);}
+  .phaseRow{display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px; margin-bottom:12px;}
+  #phase{color:var(--amber);}
+  #setBtn{width:100%; font-family:var(--sans); font-size:13px; font-weight:600; padding:13px 0; background:#22262b; color:var(--green); border:1px solid var(--line); border-radius:3px; cursor:pointer;}
+  #setBtn.stop{color:var(--red);}
+  #repList{font-family:var(--mono); font-size:11px; color:var(--text-dim); white-space:pre; margin-top:10px; min-height:14px; overflow-x:auto;}
 </style>
 </head>
 <body>
@@ -72,9 +85,11 @@
     <div class="readout">
       <div class="cell"><label>set weight</label><span class="value target" id="setWeight">--<span class="unit">kg</span></span></div>
       <div class="cell"><label>current weight</label><span class="value" id="currentWeight">--<span class="unit">kg</span></span></div>
+      <div class="cell row2"><label>handle speed</label><span class="value" id="liveSpeed">--<span class="unit">m/s</span></span></div>
+      <div class="cell row2 peak" id="peakCell" title="click to reset"><label>peak speed (this rep)<span class="hint">tap to reset</span></label><span class="value" id="peakSpeed">--<span class="unit">m/s</span></span></div>
     </div>
 
-    <div class="adjust">
+    <div class="adjust" id="adjustPanel">
       <label>adjust set weight (kg)</label>
       <div class="grid-btn">
         <button class="neg" data-kg="-10">-10</button>
@@ -88,6 +103,14 @@
         <button data-kg="5">+5</button>
         <button data-kg="10">+10</button>
       </div>
+    </div>
+
+    <div class="modebar"><button class="connect" id="modeBtn">Mode: Fixed</button></div>
+    <div id="adaptPanel" hidden>
+      <div class="phaseRow"><span id="phase">idle</span><span id="repCount">reps 0</span></div>
+      <div class="phaseRow"><span>start weight (max)</span><span><button class="connect" id="swDn">-</button> <span id="swVal">20 kg</span> <button class="connect" id="swUp">+</button></span></div>
+      <button id="setBtn">Start set</button>
+      <div id="repList"></div>
     </div>
 
     <div class="controls">
@@ -105,6 +128,16 @@
 
 <script>
 const kgToCurrent = 1.0 / 1.8;
+
+// ---- set these for your build ----
+const SPOOL_RADIUS_M = 0.03;   // effective radius where the cable winds (metres)
+const GEAR_RATIO = 1;          // motor turns per spool turn (e.g. 5 for a 5:1 reduction)
+const metersPerMotorTurn = (2 * Math.PI * SPOOL_RADIUS_M) / GEAR_RATIO;
+const MOVE_THRESH = 0.05;      // m/s: above this the handle counts as moving
+const REP_GAP_MS = 800;        // handle still this long = rep over, next movement starts a new rep
+// velocity property differs between firmware versions; the page tries each until one answers
+const VEL_PATHS = ['axis1.encoder.vel_estimate', 'axis1.pos_vel_mapper.vel', 'axis1.vel_estimate'];
+let velPath = 0;
 const STATE_NAMES = {0:'UNDEFINED',1:'IDLE',2:'STARTUP',3:'FULL CALIBRATION',4:'MOTOR CALIBRATION',
   5:'SENSORLESS',6:'ENCODER INDEX SEARCH',7:'ENCODER OFFSET CAL',8:'CLOSED LOOP',9:'LOCKIN SPIN',10:'ENCODER DIR FIND'};
 const IDLE = 1, CALIBRATE = 3, CLOSED_LOOP = 8;
@@ -135,9 +168,9 @@ function render(){
   $('axisInfo').textContent = 'axis1 · ' + (known ? (STATE_NAMES[axisState] || 'STATE ' + axisState) : '--')
     + (online && axisError ? ' · error 0x' + axisError.toString(16) : '');
   $('armBtn').classList.toggle('armed', axisState === CLOSED_LOOP);
-  $('calBtn').disabled = calibrating;
-  $('armBtn').disabled = calibrating;
-  if(!online){ showKg($('currentWeight'), null); if(!portOpen) showKg($('setWeight'), null); }
+  $('calBtn').disabled = calibrating || ad.running;
+  $('armBtn').disabled = calibrating || ad.running;
+  if(!online){ showSpeed(null, null); smoothSpeed = 0; showKg($('currentWeight'), null); if(!portOpen) showKg($('setWeight'), null); }
 }
 
 async function openPort(p){
@@ -162,7 +195,7 @@ async function openPort(p){
 
 async function closePort(){
   session++;                      // stops loops
-  portOpen = false; online = false; axisState = null; axisError = 0;
+  portOpen = false; online = false; axisState = null; axisError = 0; ad.running = false; ad.phase = 'idle';
   if(waiter){ waiter(null); waiter = null; }
   try{ await reader?.cancel(); }catch(e){}
   try{ reader?.releaseLock(); }catch(e){}
@@ -223,15 +256,194 @@ async function queryNum(cmd){
   return isNaN(n) ? null : n;
 }
 
+// ---------- speed + peak ----------
+let smoothSpeed = 0, peak = 0, inRep = false, lastMove = 0;
+function showSpeed(live, pk){
+  const f = (v) => (v == null ? '--' : v.toFixed(2)) + '<span class="unit">m/s</span>';
+  $('liveSpeed').innerHTML = f(live);
+  $('peakSpeed').innerHTML = f(pk);
+}
+function updateSpeed(v){
+  smoothSpeed = smoothSpeed * 0.5 + v * 0.5;           // light smoothing against jitter
+  const now = performance.now();
+  if(smoothSpeed > MOVE_THRESH){
+    if(!inRep){ inRep = true; peak = 0; }               // new rep starts: clear old peak
+    lastMove = now;
+    if(smoothSpeed > peak) peak = smoothSpeed;
+  }else if(inRep && now - lastMove > REP_GAP_MS){
+    inRep = false;                                      // rep over, peak stays on screen
+  }
+  showSpeed(smoothSpeed < 0.005 ? 0 : smoothSpeed, peak);
+}
+$('peakCell').addEventListener('click', () => { peak = 0; inRep = false; showSpeed(smoothSpeed, 0); });
+
+// ---------- adaptive resistance: descending load (bicep curl) ----------
+// Calibration rep (light load) measures your stroke and the pace you want to train at.
+// Then the first rep starts at the heavy start weight; later reps start a margin above the load the last rep moved at.
+// Within a rep the load can only go DOWN:
+//   pulling but the handle won't move   -> load falls smoothly toward just under your measured pull
+//   moving slower than the target pace  -> load falls in proportion to how far below the target you are
+// At the end of each rep the load resets to that rep's new starting load. The set only ends when you press Stop set.
+const AD = {
+  START_KG: 20,          // default starting (max) load, adjustable on screen
+  MAX_KG: 30,            // hard ceiling for the load
+  MIN_KG: 1,
+  CAL_KG: 2,             // light constant load during the calibration rep
+  RELEASE_KG: 2,         // light load held when the set ends or is stopped
+  RESTART_MARGIN_KG: 5,   // next rep starts this many kg above the load the last rep started moving at
+  REAL_ROM_M: 0.60,      // REAL handle travel of one full curl (measured with a tape)
+  ROM_FRAC: 0.95,        // working stroke as a fraction of the calibrated full stroke
+  CAL_SPEED_FACTOR: 1.0, // target speed = calibration-rep speed x this
+  V_MIN: 0.08, V_MAX: 0.8, // limits for the target speed, m/s
+  PULL_KG: 2,            // pull force that counts as "pulling"
+  STALL_MS: 120,         // stuck this long while pulling = too heavy
+  STALL_DROP_KG_S: 8,    // max rate the load falls while you pull against a stuck handle
+  STALL_TARGET: 0.9,     // while stuck, the load falls toward this fraction of your measured pull
+  SLOW_DROP_KG_S: 6,     // load fall rate when moving at zero speed (scales with how far below target)
+  SPEED_DEADBAND: 0.95,  // no drop once speed is at least this fraction of the target
+  CTRL_START_M: 0.05,    // the slow-speed drop starts after this much stroke
+  CTRL_END_FRAC: 0.85,   // no drops in the last part of the stroke (speed falls naturally at the top)
+  X_START_M: 0.03,       // stroke that starts a rep
+  X_HOME_M: 0.02,        // stroke that counts as back home
+  MIN_ROM_M: 0.08,       // a rep must reach this stroke to count
+  MOVE_V: 0.04,          // m/s: handle counts as moving above this
+  HOME_MS: 400,          // still this long near home = resync the stroke to zero
+  CONC_SIGN: 1           // flip to -1 if pulling shows as negative speed
+};
+let scaleFix = 1;   // distance correction learned by the calibration rep
+const ad = { on:false, running:false, phase:'idle', L:0, sent:null, sv:0, x:0, startKg:AD.START_KG, nextKg:0,
+             rom:0, vt:0, calibrating:false, t:0, rep:null, reps:[], fails:0, tStill:0, tStall:0 };
+const PHASE_TXT = { idle:'idle', rest:'ready · pull hard', rep:'rep in progress', done:'set finished' };
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+
+function adSetL(L){
+  ad.L = clamp(L, AD.MIN_KG, AD.MAX_KG);
+  if(ad.sent == null || Math.abs(ad.L - ad.sent) > 0.02){
+    ad.sent = ad.L;
+    send(`w axis1.motor.config.current_lim ${(ad.L * kgToCurrent).toFixed(4)}`);
+  }
+}
+const adDrop = (L) => { if(L < ad.L) adSetL(L); };      // the load can only go down
+
+function adRender(){
+  $('phase').textContent = ad.calibrating && ad.running
+    ? (ad.phase === 'rep' ? 'calibrating…' : 'calibration: one full curl at your training pace')
+    : PHASE_TXT[ad.phase];
+  $('repCount').textContent = 'reps ' + ad.reps.length
+    + (ad.vt && ad.running ? ' · load ' + ad.L.toFixed(1) + ' kg · pace ' + ad.vt.toFixed(2) + ' m/s' : '');
+  $('swVal').textContent = ad.startKg.toFixed(0) + ' kg';
+  $('setBtn').textContent = ad.running ? 'Stop set' : 'Start set';
+  $('setBtn').classList.toggle('stop', ad.running);
+  $('repList').textContent = ad.reps.map((r, i) =>
+    `#${i + 1}  start ${r.S.toFixed(0)} kg · moved at ${r.L0.toFixed(1)}→${r.L1.toFixed(1)} kg · stroke ${r.x.toFixed(2)} m · avg ${r.vm.toFixed(2)} m/s`
+  ).slice(-8).reverse().join('\n');
+}
+
+function adEnd(msg){
+  ad.running = false; ad.phase = 'done';
+  ad.sent = null; adSetL(AD.RELEASE_KG);
+  log(`${msg} · ${ad.reps.length} reps`);
+  adRender(); render();
+}
+
+function adFinishRep(){
+  const r = ad.rep; ad.rep = null; ad.phase = 'rest'; ad.tStall = 0;
+  if(r.xmax >= AD.MIN_ROM_M){
+    if(ad.calibrating){                       // calibration rep: learn stroke scale and training speed
+      ad.calibrating = false;
+      const scale = AD.REAL_ROM_M / r.xmax;
+      scaleFix *= scale;
+      ad.x = 0; ad.sv = 0;
+      const lift = (r.tTop - r.tStart) / 1000;
+      ad.vt = clamp(((AD.REAL_ROM_M - AD.X_START_M) / Math.max(lift, 0.3)) * AD.CAL_SPEED_FACTOR, AD.V_MIN, AD.V_MAX);
+      ad.rom = AD.REAL_ROM_M * AD.ROM_FRAC;
+      ad.nextKg = ad.startKg;
+      adSetL(ad.nextKg);                      // now go heavy
+      log(`calibrated: training speed ${ad.vt.toFixed(2)} m/s (SPOOL_RADIUS_M should be about ${(SPOOL_RADIUS_M * scaleFix).toFixed(4)}) · first rep starts at ${ad.startKg.toFixed(0)} kg, pull hard`);
+      return;
+    }
+    const vm = r.tTop > r.tStart ? (r.xmax - AD.X_START_M) / ((r.tTop - r.tStart) / 1000) : 0;
+    ad.reps.push({ x: r.xmax, S: r.S, L0: r.L0, L1: ad.L, vm });
+    // next rep starts a margin above the load this rep started moving at, never above the start weight
+    ad.nextKg = clamp(r.L0 + AD.RESTART_MARGIN_KG, AD.MIN_KG, ad.startKg);
+    adSetL(ad.nextKg);
+  }else if(!ad.calibrating){
+    adSetL(ad.nextKg);                        // short or aborted rep: same start as before
+  }
+}
+
+function adStep(vRaw, iq){
+  const now = performance.now(), dt = Math.min((now - ad.t) / 1000, 0.2);
+  ad.t = now;
+  if(!ad.running) return;
+  ad.sv = ad.sv * 0.5 + vRaw * 0.5;
+  const v = ad.sv, F = Math.abs(iq) / kgToCurrent;
+  ad.x = Math.max(0, ad.x + v * dt);                      // stroke = integrated speed
+  if(Math.abs(v) < AD.MOVE_V){ if(!ad.tStill) ad.tStill = now; } else ad.tStill = 0;
+  if(ad.tStill && now - ad.tStill > AD.HOME_MS && ad.x < 0.08) ad.x = 0;   // resync at home
+
+  // lower the load (never raise it) while working through the stroke
+  if(!ad.calibrating && ad.x < AD.CTRL_END_FRAC * ad.rom && v > -AD.MOVE_V){
+    if(Math.abs(v) < AD.MOVE_V){                          // not moving...
+      if(F > AD.PULL_KG){                                 // ...but pulling: too heavy
+        if(!ad.tStall) ad.tStall = now;
+        if(now - ad.tStall > AD.STALL_MS)
+          adDrop(Math.max(AD.STALL_TARGET * F, ad.L - AD.STALL_DROP_KG_S * dt));
+      }else ad.tStall = 0;
+    }else{
+      ad.tStall = 0;
+      if(ad.x > AD.CTRL_START_M && v < AD.SPEED_DEADBAND * ad.vt)     // moving, but slower than target
+        adDrop(ad.L - AD.SLOW_DROP_KG_S * (1 - v / ad.vt) * dt);
+    }
+  }
+
+  if(ad.phase === 'rest' && ad.x > AD.X_START_M){
+    ad.phase = 'rep'; ad.rep = { xmax: ad.x, vpk: 0, tStart: now, tTop: now, L0: ad.L, S: ad.nextKg };
+  }
+  if(ad.phase === 'rep'){
+    const r = ad.rep;
+    if(ad.x > r.xmax){ r.xmax = ad.x; r.tTop = now; }
+    r.vpk = Math.max(r.vpk, v);
+    if(ad.x < AD.X_HOME_M && r.xmax > AD.X_START_M + 0.02) adFinishRep();
+  }
+  adRender();
+}
+
+async function adStart(){
+  if(!online){ log('ODrive not connected yet'); return; }
+  if(axisError) await clearErrors();
+  if(axisState !== CLOSED_LOOP){
+    await send(`w axis1.requested_state ${CLOSED_LOOP}`);
+    await sleep(700);
+    if(axisState !== CLOSED_LOOP){ log('could not enter closed loop, calibrate first'); return; }
+  }
+  Object.assign(ad, { reps: [], fails: 0, sv: 0, x: 0, nextKg: 0, vt: 0, rom: AD.REAL_ROM_M * AD.ROM_FRAC,
+                      calibrating: true, rep: null, sent: null, tStill: 0, tStall: 0 });
+  adSetL(AD.CAL_KG);
+  ad.t = performance.now(); ad.phase = 'rest'; ad.running = true;
+  log('set started: handle fully home, then do ONE full-range curl at the pace you want to train, to calibrate');
+  adRender(); render();
+}
+$('setBtn').addEventListener('click', () => ad.running ? adEnd('stopped') : adStart());
+$('swDn').addEventListener('click', () => { if(!ad.running){ ad.startKg = clamp(ad.startKg - 1, 3, AD.MAX_KG); adRender(); } });
+$('swUp').addEventListener('click', () => { if(!ad.running){ ad.startKg = clamp(ad.startKg + 1, 3, AD.MAX_KG); adRender(); } });
+$('modeBtn').addEventListener('click', () => {
+  if(ad.running){ log('stop the set first'); return; }
+  ad.on = !ad.on;
+  $('adaptPanel').hidden = !ad.on;
+  $('adjustPanel').hidden = ad.on;
+  $('modeBtn').textContent = ad.on ? 'Mode: Adaptive' : 'Mode: Fixed';
+});
+
 // ---------- polling ----------
 async function pollLoop(my){
   await rawWrite('').catch(() => {});      // flush any boot noise
-  let n = 0;
+  let n = 0, velFails = 0;
   while(my === session){
     const iq = await queryNum('r axis1.motor.current_control.Iq_measured');
     if(my !== session) return;
     if(iq == null){
-      if(++failCount >= 3 && online){ online = false; axisState = null; log('ODrive stopped responding, waiting…'); render(); }
+      if(++failCount >= 3 && online){ online = false; axisState = null; ad.running = false; ad.phase = 'idle'; log('ODrive stopped responding, waiting…'); render(); }
       await sleep(300);
       continue;
     }
@@ -239,22 +451,35 @@ async function pollLoop(my){
     if(!online){ online = true; log('ODrive online'); }
     showKg($('currentWeight'), iq / kgToCurrent);
 
-    const lim = await queryNum('r axis1.motor.config.current_lim');
-    if(lim != null){ setKg = lim / kgToCurrent; showKg($('setWeight'), setKg); }
-    const st = await queryNum('r axis1.current_state');
-    if(st != null) axisState = st;
-    if(n++ % 3 === 0){
+    const vel = await queryNum('r ' + VEL_PATHS[velPath]);
+    if(vel != null){
+      velFails = 0;
+      const vs = vel * metersPerMotorTurn * AD.CONC_SIGN * scaleFix;
+      updateSpeed(Math.abs(vs));
+      adStep(vs, iq);
+    }
+    else if(++velFails >= 8){
+      velPath = (velPath + 1) % VEL_PATHS.length; velFails = 0;
+      log('no speed reply, trying ' + VEL_PATHS[velPath]);
+    }
+
+    if(n++ % 5 === 0){                       // slower-changing values
+      const lim = await queryNum('r axis1.motor.config.current_lim');
+      if(lim != null){ setKg = lim / kgToCurrent; showKg($('setWeight'), setKg); }
+      const st = await queryNum('r axis1.current_state');
+      if(st != null) axisState = st;
       const err = await queryNum('r axis1.error');
       if(err != null) axisError = err;
     }
     render();
-    await sleep(60);
+    await sleep(20);
   }
 }
 
 // ---------- actions ----------
 function setForceKg(kg){
   if(!online){ log('ODrive not connected yet'); return; }
+  if(ad.running){ log('stop the set first'); return; }
   setKg = Math.max(0, kg);
   send(`w axis1.motor.config.current_lim ${(setKg * kgToCurrent).toFixed(4)}`);
   showKg($('setWeight'), setKg);
@@ -354,4 +579,3 @@ render();
 </script>
 </body>
 </html>
-
