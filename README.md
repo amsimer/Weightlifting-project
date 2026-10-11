@@ -2,7 +2,7 @@
 
 Technology and Health Project Course
 
-Group 6 - Muchachos
+MSc Sports Technology Students at KTH Royal Institute of Technology
 
 # Product Information
 
