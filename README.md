@@ -54,15 +54,15 @@ Then it was worked on and improved by a group of third year students for Medical
 
 <a href="https://github.com/euro311">
   <b>Eusebio Rodriguez: euro311</b><br>
-  <img src="https://github.com/santiagor.png" width="100px"><br>
+  <img src="https://github.com/euro311.png" width="100px"><br>
 </a>
 
 <a href="https://github.com/Yunus-Sah">
   <b>Yunus Emre Sahin: Yunus-Sah</b><br>
-  <img src="https://github.com/santiagor.png" width="100px"><br>
+  <img src="https://github.com/Yunus-Sah.png" width="100px"><br>
 </a>
 
 <a href="https://github.com/shaunvarghese">
   <b>Shaun Varghese: shaunvarghese</b><br>
-  <img src="https://github.com/santiagor.png" width="100px"><br>
+  <img src="https://github.com/shaunvarghese.png" width="100px"><br>
 </a>
