@@ -18,17 +18,21 @@ The device uses an electric longboard's ODrive motor, that attempts to go back t
 
 We developed an HTML interface using Javascript code to control the device through a PC directly from this Github Repository, which was adapted from a previoues python code. The interface offers a fixed weight mode, an adaptive weight mode, user force and speed tracking for a set. 
 
-- Use the control interface here: [HTML Interface](https://amsimer.github.io/Weightlifting-project/control.html)
+- Use the control interface here: [HTML Interface](https://amsimer.github.io/Weightlifting-project/Software/control.html)
 
 We also developed an IOS app for Mac and iPhone that.............
 
-Find the app here:
+- Find the app here:
+
+Before making the HTML and app interfaces, we developed two python codes to make sure the device could be operated from windows and from mac.
+
+- Find all the software files here: [Software](https://amsimer.github.io/Weightlifting-project/Software)
 
 ## Documentation
 
 In this folder you can find relevant documents for this project, including the short paper and lean canvas.
 
-- Find it here: [Hardware](https://amsimer.github.io/Weightlifting-project/Docs).
+- Find it here: [Documents](https://amsimer.github.io/Weightlifting-project/Docs).
 
 ## Previous Work
 
@@ -36,32 +40,29 @@ The device was originally built by Linus Remahl, research engineer at KTH, Stock
 
 - Find his Github profile here: [Linus](https://github.com/linusreM).
 
-Then it was worked on and improved by a group of third year students for Medical Engineering at KTH.
+Then it was worked on and improved by a group of third year students for Medical Engineering at KTH. You can look at their work in the following:
 
-- Find their work here: [Power Cable](https://github.com/HugoPersson01/POWER-CABLE).
-
-You can find the original python codes for the project in the following folder.
-
-- Python Codes: [Previous Work](https://amsimer.github.io/Weightlifting-project/Previous_Work).
+- Github Repository: [Power Cable](https://github.com/HugoPersson01/POWER-CABLE).
+- Previous work files: [Previous Work](https://amsimer.github.io/Weightlifting-project/Previous_Work).
 
 ## Contributors
 
 <a href="https://github.com/amsimer">
   <b>Santiago Remis: amsimer</b><br>
-  <img src="https://github.com/amsimer.png" width="100px">
+  <img src="https://github.com/amsimer.png" width="100px"><br>
 </a>
 
 <a href="https://github.com/euro311">
   <b>Eusebio Rodriguez: euro311</b><br>
-  <img src="https://github.com/santiagor.png" width="100px">
+  <img src="https://github.com/santiagor.png" width="100px"><br>
 </a>
 
 <a href="https://github.com/Yunus-Sah">
   <b>Yunus Emre Sahin: Yunus-Sah</b><br>
-  <img src="https://github.com/santiagor.png" width="100px">
+  <img src="https://github.com/santiagor.png" width="100px"><br>
 </a>
 
 <a href="https://github.com/shaunvarghese">
   <b>Shaun Varghese: shaunvarghese</b><br>
-  <img src="https://github.com/santiagor.png" width="100px">
+  <img src="https://github.com/santiagor.png" width="100px"><br>
 </a>
