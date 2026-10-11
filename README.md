@@ -18,7 +18,7 @@ The device uses an electric longboard's ODrive motor, that attempts to go back t
 
 We developed an HTML interface using Javascript code to control the device through a PC directly from this Github Repository, which was adapted from a previoues python code. The interface offers a fixed weight mode, an adaptive weight mode, user force and speed tracking for a set. 
 
-- Use the control interface here: [HTML Interface](https://amsimer.github.io/Weightlifting-project/Software/control.html)
+- Use the control interface here: [HTML Interface](https://amsimer.github.io/Weightlifting-project/Software/control.html).
 
 We also developed an IOS app for Mac and iPhone that.............
 
@@ -26,7 +26,7 @@ We also developed an IOS app for Mac and iPhone that.............
 
 Before making the HTML and app interfaces, we developed two python codes to make sure the device could be operated from windows and from mac.
 
-- Find all the software files here: [Software](https://amsimer.github.io/Weightlifting-project/Software)
+- Find all the software files here: [Software](https://amsimer.github.io/Weightlifting-project/Software).
 
 ## Documentation
 
