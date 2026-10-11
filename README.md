@@ -12,13 +12,13 @@ This product is an electric weight lifting device that can be set to different w
 
 The device uses an electric longboard's ODrive motor, that attempts to go back to its starting position once turned on. The set weight is converted into a max current that limits with how much force can the motor pull back to return to its position. 
 
-- See all the hardware files here: [Hardware](https://amsimer.github.io/Weightlifting-project/Hardware).
+- See all the hardware files here: [Hardware](https://amsimer.github.io/Weightlifting-project/tree/main/Hardware).
 
 ## Software
 
 We developed an HTML interface using Javascript code to control the device through a PC directly from this Github Repository, which was adapted from a previoues python code. The interface offers a fixed weight mode, an adaptive weight mode, user force and speed tracking for a set. 
 
-- Use the control interface here: [HTML Interface](https://amsimer.github.io/Weightlifting-project/Software/control.html).
+- Use the control interface here: [HTML Interface](https://amsimer.github.io/Weightlifting-project/tree/main/Software/control.html).
 
 We also developed an IOS app for Mac and iPhone that.............
 
@@ -26,13 +26,13 @@ We also developed an IOS app for Mac and iPhone that.............
 
 Before making the HTML and app interfaces, we developed two python codes to make sure the device could be operated from windows and from mac.
 
-- Find all the software files here: [Software](https://amsimer.github.io/Weightlifting-project/Software).
+- Find all the software files here: [Software](https://amsimer.github.io/Weightlifting-project/tree/main/Software).
 
 ## Documentation
 
 In this folder you can find relevant documents for this project, including the short paper and lean canvas.
 
-- Find it here: [Documents](https://amsimer.github.io/Weightlifting-project/Docs).
+- Find it here: [Documents](https://amsimer.github.io/Weightlifting-project/tree/main/Docs).
 
 ## Previous Work
 
@@ -43,7 +43,7 @@ The device was originally built by Linus Remahl, research engineer at KTH, Stock
 Then it was worked on and improved by a group of third year students for Medical Engineering at KTH. You can look at their work in the following:
 
 - Github Repository: [Power Cable](https://github.com/HugoPersson01/POWER-CABLE).
-- Previous work files: [Previous Work](https://amsimer.github.io/Weightlifting-project/Previous_Work).
+- Previous work files: [Previous Work](https://amsimer.github.io/Weightlifting-project/tree/main/Previous_Work).
 
 ## Contributors
 
