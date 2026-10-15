@@ -10,7 +10,7 @@ This product is an electric weight lifting device that can be set to different w
 
 ## Hardware
 
-The device uses an electric longboard's ODrive motor, that attempts to go back to its starting position once turned on. The set weight is converted into a max current that limits with how much force can the motor pull back to return to its position. 
+The device uses an electric longboard's ODrive motor, that attempts to go back to its starting position once turned on. The set weight is converted into a max current that limits with how much force can the motor pull back to return to its position. etc...................
 
 - See all the hardware files here: [Hardware](https://github.com/amsimer/Weightlifting-project/tree/main/Hardware).
 
