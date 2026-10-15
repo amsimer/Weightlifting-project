@@ -34,6 +34,10 @@ In this folder you can find relevant documents for this project, including the s
 
 - Find it here: [Documents](https://github.com/amsimer/Weightlifting-project/tree/main/Docs).
 
+There's also a data folder where you can find the data used to validate the speed tracking for the HTML interface, as well as data extracted from the app.
+
+- Look here: [Data](https://github.com/amsimer/Weightlifting-project/tree/main/Data).
+
 ## Previous Work
 
 The device was originally built by Linus Remahl, research engineer at KTH, Stockholm, Sweden.
