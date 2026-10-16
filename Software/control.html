@@ -22,7 +22,7 @@
   *{box-sizing:border-box;}
   html,body{height:100%;}
   body{
-    margin:0; background:radial-gradient(circle at 20% -10%,#1e232a 0%,var(--bg) 55%);
+    margin:0; background: var(--bg);
     color:var(--text); font-family:var(--sans);
     display:flex; align-items:center; justify-content:center; padding:24px;
   }
@@ -54,13 +54,13 @@
   .adjust{padding:18px 20px; border-bottom:1px solid var(--line);}
   .adjust label{display:block; font-size:15px; color:var(--text-dim); margin-bottom:10px;}
   .grid-btn{display:grid; grid-template-columns:repeat(5,1fr); gap:6px;}
-  .grid-btn button{font-family:var(--mono); font-size:17px; padding:11px 0; background:#22262b; color:var(--text); border:1px solid var(--line); border-radius:3px; cursor:pointer;}
+  .grid-btn button{font-family:var(--mono); font-size:17px; padding:11px 0; background:#f3f4f6; color:var(--text); border:1px solid var(--line); border-radius:3px; cursor:pointer;}
   .grid-btn button:hover{border-color:var(--amber);}
   .grid-btn button:active{background:var(--amber-dim);}
-  .grid-btn button.neg{color:#e0a98a;}
+  .grid-btn button.neg{color:#9a3412;}
   .controls{display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:var(--line);}
   .controls button{font-family:var(--sans); font-size:17px; font-weight:600; padding:16px 0; background:var(--panel); color:var(--text); border:none; cursor:pointer;}
-  .controls button:hover{background:#242830;}
+  .controls button:hover{background:#eef0f3;}
   .controls button:disabled{opacity:.45; cursor:not-allowed;}
   .controls button#armBtn.armed{color:var(--green);}
   .controls button#clearBtn{color:var(--red);}
@@ -71,7 +71,7 @@
   #adaptPanel{padding:14px 20px 16px; border-bottom:1px solid var(--line);}
   .phaseRow{display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px; margin-bottom:15px;}
   #phase{color:var(--amber);}
-  #setBtn{width:100%; font-family:var(--sans); font-size:17px; font-weight:600; padding:13px 0; background:#22262b; color:var(--green); border:1px solid var(--line); border-radius:3px; cursor:pointer;}
+  #setBtn{width:100%; font-family:var(--sans); font-size:17px; font-weight:600; padding:13px 0; background:#f3f4f6; color:var(--green); border:1px solid var(--line); border-radius:3px; cursor:pointer;}
   #setBtn.stop{color:var(--red);}
   #repList{font-family:var(--mono); font-size:14px; color:var(--text-dim); white-space:pre; margin-top:10px; min-height:14px; overflow-x:auto;}
 </style>
