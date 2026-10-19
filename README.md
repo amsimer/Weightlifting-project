@@ -10,7 +10,12 @@ This product is an electric weight lifting device that can be set to different w
 
 ## Hardware
 
-The device uses an electric longboard's ODrive motor, that attempts to go back to its starting position once turned on. The set weight is converted into a max current that limits with how much force can the motor pull back to return to its position. etc...................
+The device uses an electric longboard's ODrive motor, that attempts to go back to its starting position once turned on. The set weight is converted into a max current that limits with how much force can the motor pull back to return to its position. 
+
+The hardware improvements made to the Power Cable previous prototype involved adding a cable box to enclose the power supply, Odrive controller, and Bluetooth antenna with an MDF box to avoid safety hazards related to cables coming from the power supply to the motor being exposed to the environment.
+
+The box was designed using the open-source boxes.py tool and Inkscape to draw the cable holes. The dimensions were: 240x130x110 millimeters, and the cable holes in the front of the box are 40mm in diameter, and the back hole is 70 millimeters in diameter. 
+
 
 - See all the hardware files here: [Hardware](https://github.com/amsimer/Weightlifting-project/tree/main/Hardware).
 
