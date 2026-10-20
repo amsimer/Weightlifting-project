@@ -18,6 +18,7 @@ The box was designed using the open-source boxes.py tool and Inkscape to draw th
 
 
 - See all the hardware files here: [Hardware](https://github.com/amsimer/Weightlifting-project/tree/main/Hardware).
+- View the PCB design and manufacturing files here: [PCB files](Hardware/PCB/).
 
 ## Software
 
@@ -39,7 +40,8 @@ The native SwiftUI iPhone application connects directly to the ESP32-C3 over Blu
 
 The ESP32 creates the local `POWER-CABLE` Wi-Fi network and serves a browser dashboard from its LittleFS filesystem. The dashboard provides browser-based workout control and live feedback without requiring an installed application. It displays connection state, repetitions, set progress, cable speed, set time, last-repetition measurements and the next-set recommendation.
 
-- [Open the Wi-Fi dashboard source](Software/WiFi-Dashboard/)
+- [Open the live POWER-CABLE dashboard](http://192.168.4.1/) — available while connected to the `POWER-CABLE` Wi-Fi network
+- [View the Wi-Fi dashboard source](Software/WiFi-Dashboard/)
 
 ### ESP32 firmware
 
