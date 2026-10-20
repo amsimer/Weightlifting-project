@@ -75,3 +75,33 @@ Then it was worked on and improved by a group of third year students for Medical
   <b>Shaun Varghese: shaunvarghese</b><br>
   <img src="https://github.com/shaunvarghese.png" width="100px"><br>
 </a>
+
+
+## Current software implementation
+
+The current prototype can be operated through two wireless user interfaces. Both interfaces communicate with the same ESP32-C3 firmware, which controls the ODrive motor controller and processes encoder feedback.
+
+### iOS application (Bluetooth Low Energy)
+
+The native SwiftUI application connects directly to the ESP32 over Bluetooth Low Energy. It supports motor calibration, resistance selection, target sets and repetitions, live cable speed, repetition tracking, set timing, last-repetition statistics, adaptive next-set recommendations, cable return and spoken/audio feedback.
+
+[Open the iOS application source](Software/iOS-APP/)
+
+### Wi-Fi training dashboard
+
+The ESP32 creates the local `POWER-CABLE` Wi-Fi network and serves a browser dashboard from its LittleFS filesystem. The dashboard provides the same main training controls and live feedback without requiring an installed application. It displays connection state, repetitions, set progress, cable speed, set time, last-repetition metrics and the next-set recommendation.
+
+[Open the Wi-Fi dashboard source](Software/WiFi-Dashboard/)
+
+### ESP32 firmware
+
+The Arduino firmware provides the shared motor-control and measurement layer. It handles BLE commands, HTTP endpoints, LittleFS-hosted web files, ODrive UART communication, calibration, cable position and velocity measurements, repetition detection, workout state and safety-related motor stop commands.
+
+[Open the ESP32 firmware](Software/Firmware/WeightLifting_ODrive_RepTracking/)
+
+### Software folders
+
+- `Software/Firmware/` — ESP32-C3 Arduino firmware and embedded dashboard files
+- `Software/iOS-APP/` — SwiftUI iPhone application
+- `Software/WiFi-Dashboard/` — editable browser dashboard source
+- Existing Python and HTML files in `Software/` — earlier development and diagnostic interfaces retained from the group work
