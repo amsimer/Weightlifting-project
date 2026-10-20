@@ -32,6 +32,10 @@ The original JavaScript interface controls the device through a computer. It was
 
 #### Demostration
 
+https://github.com/user-attachments/assets/4b4825d2-2c79-4780-979c-93d6ef282277
+
+https://github.com/user-attachments/assets/1ee684fa-d978-47a7-b3ad-fbba4a475636
+
 ### iOS application (Bluetooth Low Energy)
 
 The native SwiftUI iPhone application connects directly to the ESP32-C3 over Bluetooth Low Energy. It supports motor calibration, resistance selection, target sets and repetitions, start/stop control, cable return, live cable speed, repetition and set tracking, set timing, last-repetition statistics, adaptive next-set recommendations and spoken/audio feedback.
