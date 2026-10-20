@@ -26,9 +26,11 @@ The software provides three interfaces for operating, testing and monitoring the
 
 ### Original HTML interface
 
-The original JavaScript interface controls the device through a computer. It was adapted from the earlier Python implementation and provides fixed-weight and adaptive-resistance modes together with force and speed tracking.
+The original JavaScript interface controls the device through a computer. It was adapted from the earlier Python implementation and provides fixed-weight and adaptive-resistance modes together with force and speed tracking. It can be operated directly from this Github page.
 
-- [Open the original HTML interface](https://amsimer.github.io/Weightlifting-project/Software/control.html)
+- [Open the HTML interface](https://amsimer.github.io/Weightlifting-project/Software/control.html)
+
+#### Demostration
 
 ### iOS application (Bluetooth Low Energy)
 
