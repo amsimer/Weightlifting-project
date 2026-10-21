@@ -41,6 +41,7 @@ https://github.com/user-attachments/assets/1ee684fa-d978-47a7-b3ad-fbba4a475636
 The native SwiftUI iPhone application connects directly to the ESP32-C3 over Bluetooth Low Energy. It supports motor calibration, resistance selection, target sets and repetitions, start/stop control, cable return, live cable speed, repetition and set tracking, set timing, last-repetition statistics, adaptive next-set recommendations and spoken/audio feedback.
 
 - [Open the iOS application source](Software/iOS-APP/)
+- [Watch the iOS application demo](Software/Demos/ios-app-recording.mp4)
 
 ### Wi-Fi training dashboard
 
@@ -48,6 +49,7 @@ The ESP32 creates the local `POWER-CABLE` Wi-Fi network and serves a browser das
 
 - [Open the live POWER-CABLE dashboard](http://192.168.4.1/) — available while connected to the `POWER-CABLE` Wi-Fi network
 - [View the Wi-Fi dashboard source](Software/WiFi-Dashboard/)
+- [Watch the Wi-Fi dashboard demo](Software/Demos/web-dashboard-recording.mov)
 
 ### ESP32 firmware
 
